@@ -1,0 +1,104 @@
+#                          __
+#                         /\ \__
+#  _____      __      ____\ \ ,_\    __
+# /\ '__`\  /'__`\   /',__\\ \ \/  /'__`\
+# \ \ \L\ \/\ \L\.\_/\__, `\\ \ \_/\  __/
+#  \ \ ,__/\ \__/.\_\/\____/ \ \__\ \____\
+#   \ \ \/  \/__/\/_/\/___/   \/__/\/____/
+#    \ \_\
+#     \/_/
+#
+# This file, usually found at `$XDG_CONFIG_HOME/paste/config.toml`, can be used
+# to store persistent configuration for `paste`.
+#
+# When options are specified in multiple locations, they will be applied with
+# the following precedence: cli > env > file. This means these options may be
+# overridden when running the program.
+#
+# Any relative paths specified in this file are resolved relative to this file's
+# parent directory. Use `--conf` on the command-line to provide an alternate
+# location for this file.
+
+[meta]
+# Refresh rate
+#
+# On refresh, the service cleans up stale (expired) pastes, removing them from
+# the filesystem.
+refresh = "30s"
+
+[disk]
+# Data directory root
+#
+# Determines where files will be stored.
+path = "/var/www/paste"
+# Disk usage quota
+#
+# Ensures the service's total used storage does not exceed the supplied limit.
+# If unset, no storage limit will be applied.
+quota = "1 GiB"
+
+#
+## Authorization
+#
+# By default, `paste` takes a maximalist approach to security, disallowing all
+# operations. As such, in order to perform any operations you must manually
+# configure `paste` with users to perform actions.
+#
+# The following permissions are supported:
+# - access: Upload a file, producing a URL where it's hosted.
+# - upload: Upload a file, producing a URL where it's hosted.
+# - manage: Manage a file, changing its expiry or counter.
+# - delete: Delete a file, immediately removing it.
+# - query:  Query a file's options and statistics.
+# - list:   List all files associated with a user.
+# - system: Perform any operation on behalf of another user.
+#
+# Roles allow concise declarations of default permissions a user should have.
+# Additional permissions can be specified as needed.
+#
+# The following user roles are provided:
+# - owner: [access, upload, manage, delete, query, list, system]
+# - admin: [access, upload, manage, delete, query, list        ]
+# - guest: [access, upload,                 query              ]
+# - ronly: [access,                         query              ]
+# - empty: [                                                   ]
+#
+# Users are authenticated using *only* their token. It is important to ensure
+# users keep this private.
+#
+# While tokens can generally be any string (similar to a password), it is
+# recommended to use a tool like OpenSSL to generate them on the command-line
+# like such:
+#
+# $ openssl rand --base64 32
+[auth]
+
+# A privileged guests user who can manage themselves.
+[[user]]
+name = "zakhary"
+# Uh ok, did I just leak a token??
+token = "HTu1t5YyZoLX7BOFHP4DFP1xKKWxuJyLc3k7ivscbHE="
+# Specify user as guest
+role = "guest"
+# Add extra permissions
+perm = [
+  # Add any additional permissions here...
+  "manage",
+  "delete",
+]
+
+# Enable anyone to visit upload links
+[[user]]
+name = "guest"
+# Allow this user to be accessed without a token
+#
+# Note: This can only be true for exactly one user!
+token = { none = true }
+# Constrain the user to read-only actions
+role = "guest"
+# Limit this user to the lesser of:
+#
+# - disk quota: 1 MiB
+limit.quota = "1 MiB"
+# - file count: 10
+limit.files = 10
